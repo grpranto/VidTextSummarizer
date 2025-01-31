@@ -4,13 +4,14 @@
 # 3. The user inputs their HuggingFace API token and a URL (either a YouTube video or a webpage). The token is required for accessing the HuggingFace model.
 # 4. The application validates the input. If the URL is for a YouTube video, the corresponding loader extracts text from the video's subtitles. For general websites, an unstructured loader fetches and processes the page content.
 # 5. A customizable prompt template guides the summarization process, ensuring concise and informative summaries tailored to the input text.
-# 6. The HuggingFaceEndpoint connects to the mistralai/Mistral-7B-Instruct-v0.3, which generates the summary. Users can configure this to use a different HuggingFace model if needed.
+# 6. The HuggingFaceEndpoint connects to the deepseek-ai/DeepSeek-R1-Distill-Qwen-32B, which generates the summary. Users can configure this to use a different HuggingFace model if needed.
 # 7. The application includes exception handling to manage errors, such as invalid URLs or API token issues, gracefully.
 
 # Notes:
 # - Ensure the HuggingFace API token is valid and has access to the specified model repository.
-# - The mistralai/Mistral-7B-Instruct-v0.3 model is chosen for its summarization capabilities. Other models can be substituted as needed.
+# - The deepseek-ai/DeepSeek-R1-Distill-Qwen-32B model is chosen for its summarization capabilities. Other models can be substituted as needed.
 
+import re
 import validators
 import streamlit as st
 from langchain.prompts import PromptTemplate
@@ -28,6 +29,24 @@ st.set_page_config(
     page_title="Text Summarization from Website or Youtube Video URL",
     page_icon="📝"
 )
+
+
+def clean_summary(summary):
+    """
+    Removes the automatically generated </think> tag from the summary.
+    DeepSeek models may prepend the <\think> tag as part of their internal 
+    reasoning process, similar to how GPT-4 Turbo uses <|thinking|>.  
+    This function ensures that the final output is clean by filtering out 
+    such system tags if they exist.
+
+    Args:
+        summary (str): The generated summary that may contain the <\think> tag.
+
+    Returns:
+        str: The cleaned summary without the <\think> tag.
+    """
+    return re.sub(r"<\\?/think>", "", summary).strip()
+
 
 # Application Title and Subtitle
 st.title("📝 Text Summarization from Website or Youtube Video URL")
@@ -50,7 +69,7 @@ generic_url = st.text_input(
 
 # Prompt Template for Summarization
 prompt_template = """
-Provide the summary of the following content in 300 words:
+Summarize the following text in 300 words, ensuring the last sentence is complete and meaningful:
 {text}
 """
 
@@ -84,17 +103,13 @@ if st.button("Summarize"):
 
                 docs = loader.load()
 
-                # # Configure HuggingFace LLM Endpoint
-                # repo_id = "mistralai/Mistral-7B-Instruct-v0.3"
-                # llm = HuggingFaceEndpoint(
-                #     repo_id=repo_id,
-                #     max_new_tokens=150,
-                #     temperature=0.7,
-                #     huggingfacehub_api_token=hf_api_key
-                # )
-                llm = ChatGroq(
-                    model="gemma2-9b-it",
-                    groq_api_key=hf_api_key
+                # Configure HuggingFace LLM Endpoint
+                repo_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+                llm = HuggingFaceEndpoint(
+                    repo_id=repo_id,
+                    max_new_tokens=300,
+                    temperature=0.7,
+                    huggingfacehub_api_token=hf_api_key
                 )
 
                 # Summarization Chain
@@ -109,7 +124,7 @@ if st.button("Summarize"):
                 summary_text = output_summary.get('output_text', '').strip()
 
                 # Display the Summary
-                st.success(summary_text)
+                st.success(clean_summary(summary_text))
 
         except Exception as e:
             st.exception(f"Exception:{e}")
