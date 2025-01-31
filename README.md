@@ -9,6 +9,10 @@ This is a **Streamlit-based application** that extracts and summarizes content f
 - **Supports HuggingFace API integration**, allowing users to configure different models.
 - **Handles errors gracefully**, ensuring smooth user experience.
 
+## Demo
+![image](https://github.com/user-attachments/assets/5532b402-eb13-46db-9a0d-b05de7a3b5ad)
+
+
 ## Installation
 
 ### 1. Clone the Repository
