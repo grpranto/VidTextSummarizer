@@ -49,8 +49,14 @@ def clean_summary(summary):
 
 
 # Application Title and Subtitle
-st.title("📝 Text Summarization from Website or Youtube Video URL")
-st.subheader("Summarize URL")
+st.header("📝 Content Summarization from URL using DeepSeek-R1-Distill-Qwen-32B")
+st.subheader("Demo URLs:")
+st.info(
+    "🌐 Web: https://en.wikipedia.org/wiki/DeepSeek"
+)
+st.info(
+    "🎥 YouTube: https://www.youtube.com/watch?v=MCWJNOfJoSM&t=11s&ab_channel=FIFA"
+)
 
 # Sidebar: Get the Huggingface API Token
 with st.sidebar:
@@ -60,16 +66,16 @@ with st.sidebar:
         type="password",
     )
 
+st.subheader("Please Provide the URL:")
 # Input field for the URL to be summarized
 generic_url = st.text_input(
     "URL",
     label_visibility="collapsed",
-    placeholder="e.g. https://python.langchain.com/docs/introduction/"
 )
 
 # Prompt Template for Summarization
 prompt_template = """
-Summarize the following text in 300 words, ensuring the last sentence is complete and meaningful:
+Summarize the following text in 300 words, ensuring the last sentence is complete:
 {text}
 """
 
